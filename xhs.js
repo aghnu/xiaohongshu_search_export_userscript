@@ -3,8 +3,9 @@
 // @namespace    http://tampermonkey.net/
 // @version      0.1
 // @description  try to take over the world!
-// @author       You
+// @author       Gengyuan Huang
 // @match        https://pgy.xiaohongshu.com/solar/advertiser/patterns/kol
+// @require      https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.3/xlsx.full.min.js
 // @icon         https://www.google.com/s2/favicons?domain=tampermonkey.net
 // @grant        none
 // ==/UserScript==
@@ -12,14 +13,35 @@
 (function() {
     'use strict';
 
-    // set constants
-    let targetURL = "cooperator/blogger/v2"
+    // set globals
+    var targetURL = "cooperator/blogger/v2";
+	var sheetName = "Test Sheet";
+    var ifstart = false;
+    var content = [];
+	var nextPage = () => {};
+	var workbook = createWorkBook(sheetName);
+
 
     // set information process function
     const processor = (responseBodyText) => {
-        let jsonResponse = JSON.parse(responseBodyText);
-        console.log(jsonResponse);
+		if (!ifstart) {
+			content = [responseBodyText];
+		} else {
+			content = content.push(responseBodyText);
+			nextPage();
+		}
     }
+
+	const createWorkBook = (sheetname, props={}) => {
+		var wb = XLSX.utils.book_new();
+		wb.Props = {};
+		wb.SheetNames.push(sheetname)
+		return wb;
+	}
+
+	const addNewRowToWB = (wb) => {
+
+	}
 
     // injection
     // intercepting AJAX responses
@@ -53,9 +75,13 @@
     );
     trigger.innerHTML = "Click here to start";
     trigger.addEventListener('click', () => {
-        let nextButton = document.getElementsByClassName("pagination_cell")[8];
-        
-        nextButton.click();
+
+		if (!ifstart) {
+			let nextButton = document.getElementsByClassName("pagination_cell")[8];
+			ifstart = true;
+			nextPage = nextButton.click;
+		}
+
     });
 
     document.body.appendChild(trigger);
