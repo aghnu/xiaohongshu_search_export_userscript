@@ -15,17 +15,15 @@
 
     // set globals
     var targetURL = "cooperator/blogger/v2";
-	var sheetName = "Test Sheet";
-    var ifstart = false;
     var gotinfo = false;
     var content = [];
-	var nextPage = () => {};
+    var autoPage = null;
 	// var workbook = createWorkBook(sheetName);
 
 
     // set information process function
     const processor = (responseBodyText) => {
-		if (!ifstart) {
+		if (autoPage == null) {
 			content = [responseBodyText];
             gotinfo = true;
 		} else {
@@ -36,8 +34,38 @@
 
     const clickStart = () => {
         console.log("clicked");
-        ifstart = true;
         waitsForNext();     // set auto next page
+    }
+
+    const clickPrint = () => {
+        console.log("start printing");
+
+        // create workbook
+        var wb = XLSX.utils.book_new();
+        var sheetContent = [['name', 'gender', 'likeCollectCountInfo', 'totalNoteCount']]
+        wb.props = {};
+        wb.SheetNames.push("out");
+        
+
+        window.clearInterval(autoPage);
+        autoPage = null;
+        content.forEach(pageRecord => {
+            let jsonPageRecord = JSON.parse(pageRecord);
+            jsonPageRecord.data.kols.forEach(userRecord => {
+                sheetContent.push(
+                    [
+                        userRecord.name,
+                        userRecord.gender,
+                        userRecord.likeCollectCountInfo,
+                        userRecord.totalNoteCount,
+                    ]
+                );
+            });
+        });
+
+        var ws = XLSX.utils.aoa_to_sheet(sheetContent);
+        wb.Sheets["out"] = ws;
+        XLSX.writeFile(wb, 'out.xlsb');
     }
 
 	// const createWorkBook = (sheetname, props={}) => {
@@ -53,7 +81,7 @@
 
     const waitsForNext = () => {
         // this function looking for the next button, when next button open, click the button
-        let countdown = setInterval(() => {
+        autoPage = setInterval(() => {
 
             let nextButton = document.getElementsByClassName("pagination_cell")[8];
             console.log("next");
@@ -63,7 +91,7 @@
                 gotinfo = false;
                 nextButton.click();
             }
-        }, 1000);
+        }, 3000);
     }
 
     // injection
@@ -102,7 +130,7 @@
     let printer = document.createElement('button');
     printer.setAttribute('style',buttonStyle);
     printer.innerHTML = "Click here to download";
-    printer.addEventListener('click', clickStart);
+    printer.addEventListener('click', clickPrint);
 
     let controlPanel = document.createElement('div');
     controlPanel.setAttribute(
