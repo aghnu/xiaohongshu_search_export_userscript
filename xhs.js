@@ -14,10 +14,31 @@
     'use strict';
     // https://pgy.xiaohongshu.com/solar/advertiser/patterns/kol
 
+    // adjustiable variables
+    var AUTO_PAGE_SPEED = 3;        // seconds
+    var CONTENT_HEADER = [
+        'name', 
+        'gender', 
+        'redId', 
+
+        'likeCollectCountInfo', 
+        'totalNoteCount', 
+        'fansCount',
+         
+        'lowerPrice', 
+        'personalTags', 
+        'type',
+
+        'picturePrice',
+        'videoPrice',
+
+    ];
+
+
     // set globals
     var ajaxFound = false;
     var autoPage = false;
-    var content = [['name', 'gender', 'redId', 'likeCollectCountInfo', 'totalNoteCount']];
+    var content = [CONTENT_HEADER];
     var counterDisplayRef = null;
 
     // helpers
@@ -30,7 +51,7 @@
     // onclick events
     const clickErase = () => {
         // clear all records
-        content = [['name', 'gender', 'redId', 'likeCollectCountInfo', 'totalNoteCount']];
+        content = [CONTENT_HEADER];
         updateCounter();
     }
     const clickStart = () => {
@@ -57,15 +78,13 @@
             if (this.responseURL.includes("cooperator/blogger/v2") && this.readyState === 4) {
                 let contentJSON = JSON.parse(this.responseText);
                 contentJSON.data.kols.forEach(userRecord => {
-                    content.push(
-                        [
-                            userRecord.name,
-                            userRecord.gender,
-                            userRecord.redId,
-                            userRecord.likeCollectCountInfo,
-                            userRecord.totalNoteCount,
-                        ]
-                    );
+
+                    let rowTemp = [];
+                    CONTENT_HEADER.forEach(h => {
+                        rowTemp.push(String(userRecord[h]));
+                    });
+
+                    content.push(rowTemp);
                 });
                 updateCounter();
                 ajaxFound = true;
@@ -86,7 +105,7 @@
             ajaxFound = false;      // reset it to false.
             nextButton.click();     // going next page
         }
-    }, 3000);
+    }, AUTO_PAGE_SPEED * 1000);
 
     // user interface
     let buttonStyle = `
