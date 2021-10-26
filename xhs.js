@@ -4,7 +4,7 @@
 // @version      0.1
 // @description  try to take over the world!
 // @author       Gengyuan Huang
-// @match        https://www.google.com
+// @match        https://pgy.xiaohongshu.com/solar/advertiser/patterns/kol
 // @require      https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.3/xlsx.full.min.js
 // @icon         https://www.google.com/s2/favicons?domain=tampermonkey.net
 // @grant        none
@@ -13,94 +13,80 @@
 (function() {
     'use strict';
     // https://pgy.xiaohongshu.com/solar/advertiser/patterns/kol
+
     // set globals
-    var targetURL = "cooperator/blogger/v2";
-    var gotinfo = false;
-    var content = [];
-    var autoPage = null;
-    var currentRecordsNum = 20;
-	// var workbook = createWorkBook(sheetName);
+    var ajaxFound = false;
+    var autoPage = false;
+    var content = [['name', 'gender', 'redId', 'likeCollectCountInfo', 'totalNoteCount']];
+    var counterDisplayRef = null;
 
-
-    // set information process function
-    const processor = (responseBodyText) => {
-		if (autoPage == null) {
-			content = [responseBodyText];
-            gotinfo = true;
-		} else {
-			content.push(responseBodyText);
-			gotinfo = true;
-		}
+    // helpers
+    const updateCounter = () => {
+        if (counterDisplayRef) {
+            counterDisplayRef.innerHTML = content.length - 1;
+        }
     }
 
-    const clickErase = () => {}
-
+    // onclick events
+    const clickErase = () => {
+        // clear all records
+        content = [['name', 'gender', 'redId', 'likeCollectCountInfo', 'totalNoteCount']];
+        updateCounter();
+    }
     const clickStart = () => {
-        console.log("clicked");
-        waitsForNext();     // set auto next page
+        autoPage = !autoPage;       // switch
     }
-
     const clickPrint = () => {
-        console.log("start printing");
-
         // create workbook
         var wb = XLSX.utils.book_new();
-        var sheetContent = [['name', 'gender', 'likeCollectCountInfo', 'totalNoteCount']]
         wb.props = {};
         wb.SheetNames.push("out");
 
-
-        window.clearInterval(autoPage);
-        autoPage = null;
-        content.forEach(pageRecord => {
-            let jsonPageRecord = JSON.parse(pageRecord);
-            jsonPageRecord.data.kols.forEach(userRecord => {
-                sheetContent.push(
-                    [
-                        userRecord.name,
-                        userRecord.gender,
-                        userRecord.likeCollectCountInfo,
-                        userRecord.totalNoteCount,
-                    ]
-                );
-            });
-        });
-
-        var ws = XLSX.utils.aoa_to_sheet(sheetContent);
+        // create worksheet
+        var ws = XLSX.utils.aoa_to_sheet(content);
         wb.Sheets["out"] = ws;
+
+        // export
         XLSX.writeFile(wb, 'out.xlsb');
     }
 
-    const waitsForNext = () => {
-        // this function looking for the next button, when next button open, click the button
-        autoPage = setInterval(() => {
-
-            let nextButton = document.getElementsByClassName("pagination_cell")[8];
-            console.log("next");
-            console.log(gotinfo);
-            console.log(nextButton);
-            if ((gotinfo)&&(nextButton != null)) {
-                gotinfo = false;
-                nextButton.click();
-            }
-        }, 3000);
-    }
-
-    // injection
-    // intercepting AJAX responses
-    // looking for given url
+    // filter AJAX call and store content
     let send = XMLHttpRequest.prototype.send;
     XMLHttpRequest.prototype.send = function() {
-      this.addEventListener('readystatechange', function() {
-        if (this.responseURL.includes(targetURL) && this.readyState === 4) {
-          processor(this.responseText);
-        }
-      }, false);
-      send.apply(this, arguments);
+        this.addEventListener('readystatechange', function() {
+            if (this.responseURL.includes("cooperator/blogger/v2") && this.readyState === 4) {
+                let contentJSON = JSON.parse(this.responseText);
+                contentJSON.data.kols.forEach(userRecord => {
+                    content.push(
+                        [
+                            userRecord.name,
+                            userRecord.gender,
+                            userRecord.redId,
+                            userRecord.likeCollectCountInfo,
+                            userRecord.totalNoteCount,
+                        ]
+                    );
+                });
+                updateCounter();
+                ajaxFound = true;
+            }
+        }, false);
+        send.apply(this, arguments);
     };
 
 
-
+    // attemp to click on next page every 3 seconds
+    // will only fire:
+    //      1. if previous targeted ajax call is received
+    //      2. find the next button
+    //      3. user turned on auto next page
+    setInterval(() => {
+        let nextButton = document.getElementsByClassName("pagination_cell")[8];
+        if ((autoPage)&&(ajaxFound)&&(nextButton != null)) {
+            ajaxFound = false;      // reset it to false.
+            nextButton.click();     // going next page
+        }
+    }, 3000);
 
     // user interface
     let buttonStyle = `
@@ -119,6 +105,7 @@
         font-family: Arial, Helvetica, sans-serif;
         color: grey;
         text-align: center;
+        margin-bottom: 1em;
     `
 
     let controlPanelStyle = `
@@ -140,6 +127,7 @@
 
     let buttonPanelContainerStyle = `
         padding: 0.8em;
+
     `
 
     let counterDisplayStyle = `
@@ -198,7 +186,8 @@
 
     let counterDisplay = document.createElement('p');
     counterDisplay.setAttribute('style', counterDisplayStyle);
-    counterDisplay.innerHTML = currentRecordsNum;
+    counterDisplay.innerHTML = 0;
+    counterDisplayRef = counterDisplay;
 
     let counterDisplayContainer = document.createElement('div');
     counterDisplayContainer.setAttribute('style', counterDisplayContainerStyle);
