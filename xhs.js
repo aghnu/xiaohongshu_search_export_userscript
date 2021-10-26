@@ -17,16 +17,16 @@
     // adjustiable variables
     var AUTO_PAGE_SPEED = 3;        // seconds
     var CONTENT_HEADER = [
-        'name', 
-        'gender', 
-        'redId', 
+        'name',
+        'gender',
+        'redId',
 
-        'likeCollectCountInfo', 
-        'totalNoteCount', 
+        'likeCollectCountInfo',
+        'totalNoteCount',
         'fansCount',
-         
-        'lowerPrice', 
-        'personalTags', 
+
+        'lowerPrice',
+        'personalTags',
         'type',
 
         'picturePrice',
@@ -38,6 +38,7 @@
     // set globals
     var ajaxFound = false;
     var autoPage = false;
+    var autoPageButton = null;
     var content = [CONTENT_HEADER];
     var counterDisplayRef = null;
 
@@ -56,6 +57,11 @@
     }
     const clickStart = () => {
         autoPage = !autoPage;       // switch
+        if ((autoPage)&&(autoPageButton)) {
+            autoPageButton.setAttribute('style', buttonStylePressed);
+        } else {
+            autoPageButton.setAttribute('style', buttonStyle);
+        }
     }
     const clickPrint = () => {
         // create workbook
@@ -109,10 +115,21 @@
 
     // user interface
     let buttonStyle = `
-        background-color: white;
+        background-color: #fffbf5;
         border: none;
         border-radius: 50%;
         box-shadow: 0pt 0pt 2pt rgb(0,0,0,0.2);
+        cursor: pointer;
+        width: 3.5em;
+        height: 3.5em;
+        margin: auto;
+    `
+
+    let buttonStylePressed = `
+        background-color: #ffc6bd;
+        border: none;
+        border-radius: 50%;
+        box-shadow: inset 0pt 0pt 2pt rgb(0,0,0,0.2);
         cursor: pointer;
         width: 3.5em;
         height: 3.5em;
@@ -174,6 +191,7 @@
     trigger.setAttribute('style',buttonStyle);
     trigger.addEventListener('click', clickStart);
     trigger.innerHTML = triggerSVG;
+    autoPageButton = trigger;
     let triggerName = document.createElement('p');
     triggerName.setAttribute('style',buttonNameStyle);
     triggerName.innerHTML = "Auto next page";
