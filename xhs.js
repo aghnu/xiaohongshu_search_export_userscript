@@ -15,24 +15,27 @@
     // https://pgy.xiaohongshu.com/solar/advertiser/patterns/kol
 
     // adjustiable variables
-    var AUTO_PAGE_SPEED = 3;        // seconds
-    var CONTENT_HEADER = [
+    var AUTO_PAGE_SPEED = 3;        // seconds, control the speed of auto next page
+    var CONTENT_HEADER = [          // adding/remove excel col
         'name',
         'gender',
         'redId',
-
+        'location',
+        'fansCount',
+        
+        'businessNoteCount',
         'likeCollectCountInfo',
         'totalNoteCount',
-        'fansCount',
 
-        'lowerPrice',
         'personalTags',
+        'featureTags',
         'type',
-
+        
+        'lowerPrice',
         'picturePrice',
         'videoPrice',
     ];
-    var REQUIRE_DECRYPT = [
+    var REQUIRE_DECRYPT = [         // DO NOT CHANGE if you dont know what you are doing, it indicate which col is cipher text
         "businessNoteCount",
         "fansCount",
         "lowerPrice",
