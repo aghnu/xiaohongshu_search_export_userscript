@@ -4,7 +4,7 @@ no warranty, use at your own risk
 This is a tampermonkey userscript created to collect and export query result from page "https://pgy.xiaohongshu.com/solar/advertiser/patterns/kol". It intercepts ajax response from api "cooperator/blogger/v2" and collects the response body. The tool provides a set of functionalities through its user interface to make this collection process as easy as possible. 
 
 ## This tool can be used to...
-- Collecting information from current query result.
+- Collect information from current query result.
 - Export final result as an excel worksheet, this is achieved using sheetJS
 - Click on next page automatically, when the current page is being rendered.
 - Decrypt cipher text.
