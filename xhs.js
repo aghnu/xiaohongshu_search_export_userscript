@@ -362,7 +362,7 @@
     // decipher panel
     let decipherPanelInput = document.createElement('textarea');
     decipherPanelInput.setAttribute('style', decipherFormInputStyle);
-    decipherPanelInput.setAttribute('placeholder', '{\n"&#xE080":0, \n"&#xE081":1, \n"&#xE082":2, \n"&#xE083":3, \n"&#xE084":4, \n"&#xE085":5, \n"&#xE086":6, \n"&#xE087":7, \n"&#xE088":8, \n"&#xE089":9\n}');
+    decipherPanelInput.setAttribute('placeholder', '{\n"&#xE080;":0, \n"&#xE081;":1, \n"&#xE082;":2, \n"&#xE083;":3, \n"&#xE084;":4, \n"&#xE085;":5, \n"&#xE086;":6, \n"&#xE087;":7, \n"&#xE088;":8, \n"&#xE089;":9\n}');
     decipherPanelInputRef = decipherPanelInput;
 
     let decipherPanel = document.createElement('div');
